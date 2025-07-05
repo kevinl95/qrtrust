@@ -5,7 +5,7 @@ export async function checkUrlWithPhishTank(url) {
     body: new URLSearchParams({
       url: url,
       format: "json",
-      app_key: "", // Optional
+      app_key: "",
     }),
   });
   const data = await res.json();

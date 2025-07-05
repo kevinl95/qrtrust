@@ -4,12 +4,73 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-  <title>QRTrust</title>
+  <meta name="description" content="QRTrust - Secure QR Code Scanner with Phishing Protection" />
+  <meta name="theme-color" content="#ff5757" />
+  <title>QRTrust - Detect Malicious QR Codes</title>
 </head>
 <body>
-  <h1>Scan a QR Code</h1>
-  <video autoplay playsinline></video>
-  <div id="result"></div>
-  <script type="module" src="/main.js"></script>
+  <div id="app">
+    <header class="app-header">
+      <div class="logo-container">
+        <img src="/logo.svg" alt="QRTrust Logo" class="app-logo" />
+        <h1 class="app-title">QRTrust</h1>
+      </div>
+      <p class="app-subtitle">Check QR Codes before Loading</p>
+    </header>
+
+    <main class="main-content">
+      <div class="scanner-container">
+        <div class="video-wrapper">
+          <video autoplay playsinline muted></video>
+          <div class="scanner-overlay">
+            <div class="scan-frame"></div>
+          </div>
+        </div>
+        
+        <div class="controls">
+          <button id="start-btn" class="primary-btn">
+            <span class="btn-icon">📱</span>
+            Start Scanning
+          </button>
+          <button id="stop-btn" class="secondary-btn" style="display: none;">
+            <span class="btn-icon">⏹️</span>
+            Stop Scanner
+          </button>
+        </div>
+      </div>
+
+      <div id="result" class="result-container" style="display: none;">
+        <div class="result-content">
+          <div class="result-icon"></div>
+          <div class="result-text"></div>
+          <div class="result-url"></div>
+        </div>
+      </div>
+
+      <div class="features">
+        <div class="feature-item">
+          <div class="feature-icon">🛡️</div>
+          <h3>Phishing Protection</h3>
+          <p>Advanced detection against malicious QR codes</p>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">⚡</div>
+          <h3>Fast Scanning</h3>
+          <p>Instant QR code recognition and analysis</p>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">🔒</div>
+          <h3>Privacy First</h3>
+          <p>Your data stays secure and never touches our server</p>
+        </div>
+      </div>
+    </main>
+
+    <footer class="app-footer">
+      <p>&copy; A project by <a href="https://www.kevinloeffler.com" target="_blank" rel="noopener">Kevin Loeffler</a></p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
 </body>
 </html>
