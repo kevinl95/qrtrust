@@ -2,6 +2,7 @@ import { BrowserQRCodeReader } from '@zxing/browser';
 
 let codeReader = null;
 let currentStream = null;
+let videoElement = null;
 
 export async function startScanner(videoEl, onResult) {
   if (codeReader) {
@@ -9,6 +10,7 @@ export async function startScanner(videoEl, onResult) {
   }
   
   codeReader = new BrowserQRCodeReader();
+  videoElement = videoEl; // Store reference to video element
   
   try {
     // Request camera permissions first
@@ -31,8 +33,18 @@ export async function startScanner(videoEl, onResult) {
           onResult(result.getText());
         }
         if (error) {
-          // Only log non-NotFoundException errors
-          if (error.name !== 'NotFoundException') {
+          // Filter out expected errors that occur during normal scanning
+          const isExpectedError = error.name === 'NotFoundException' || 
+                                 error.name === 'NotFoundException2' ||
+                                 error.name === 'ChecksumException' ||
+                                 error.name === 'ChecksumException2' ||
+                                 error.constructor.name.includes('NotFoundException') ||
+                                 error.constructor.name.includes('ChecksumException') ||
+                                 error.message?.includes('No MultiFormat Readers') ||
+                                 error.toString().includes('NotFoundException') ||
+                                 error.toString().includes('ChecksumException');
+          
+          if (!isExpectedError) {
             console.warn('QR scan error:', error);
           }
         }
@@ -47,13 +59,30 @@ export async function startScanner(videoEl, onResult) {
 }
 
 export function stopScanner() {
+  console.log("Stopping scanner...");
+  
+  // Stop the camera stream first
+  if (currentStream) {
+    currentStream.getTracks().forEach(track => {
+      console.log("Stopping track:", track.kind);
+      track.stop();
+    });
+    currentStream = null;
+  }
+  
+  // Clear the video element
+  if (videoElement) {
+    videoElement.srcObject = null;
+    videoElement.load(); // Reset the video element
+    videoElement = null;
+  }
+  
+  // Clean up the code reader
   if (codeReader) {
-    codeReader.reset();
+    // The BrowserQRCodeReader doesn't have a reset() method
+    // We just need to set it to null to allow garbage collection
     codeReader = null;
   }
   
-  if (currentStream) {
-    currentStream.getTracks().forEach(track => track.stop());
-    currentStream = null;
-  }
+  console.log("Scanner stopped successfully");
 }
