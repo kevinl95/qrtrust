@@ -99,7 +99,7 @@ Visit [qrtrust.fyi](https://qrtrust.fyi) and install it as a PWA on your device.
 
 ```
 ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   QR Scanner    │───▶│   Main App       │───▶│  Netlify Func   │
+│   QR Scanner    │──▶│   Main App       │──▶│  Netlify Func   │
 │   (ZXing)       │    │   (JavaScript)   │    │   (CORS Proxy)  │
 └─────────────────┘    └──────────────────┘    └─────────────────┘
                                 │                        │
