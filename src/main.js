@@ -56,6 +56,20 @@ function handleStopScanning() {
 async function handleQRCodeDetected(scannedUrl) {
   if (!scannedUrl) return;
   
+  // Additional check to prevent multiple simultaneous processing
+  if (!isScanning) {
+    console.log("Ignoring QR detection - scanner already stopped");
+    return;
+  }
+  
+  console.log("Processing detected QR code...");
+  
+  // Stop scanning immediately when we detect a QR code
+  stopScanner();
+  isScanning = false;
+  startBtn.style.display = 'inline-flex';
+  stopBtn.style.display = 'none';
+  
   showLoadingResult();
   
   try {

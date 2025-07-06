@@ -27,7 +27,7 @@ export async function checkUrlWithPhishTank(url) {
     // PhishTank JSON response structure based on docs:
     // { results: { url: "...", in_database: true/false, verified: "y"/"n", ... } }
     if (!data.results) {
-      console.warn("PhishTank returned no results for URL:", url);
+      console.warn("PhishTank returned no results");
       return false; // Default to safe if no results
     }
 
@@ -35,11 +35,10 @@ export async function checkUrlWithPhishTank(url) {
     const verified = data.results.verified === "y" || data.results.verified === true;
     const inDatabase = data.results.in_database === true || data.results.in_database === "y";
     
-    console.log("PhishTank analysis:", {
-      url: data.results.url,
+    console.log("PhishTank analysis result:", {
       in_database: inDatabase,
       verified: verified,
-      phish_id: data.results.phish_id
+      has_phish_id: !!data.results.phish_id
     });
 
     // URL is considered phishing if it's in the database

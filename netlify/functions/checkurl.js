@@ -31,6 +31,12 @@ function parsePhishTankXML(xmlText) {
   }
 }
 
+/**
+ * Netlify function to check URLs against PhishTank API
+ * 
+ * Note: PhishTank currently uses rate limiting for free tier requests.
+ * The app gracefully handles rate limit errors and shows appropriate messages to users.
+ */
 export async function handler(event) {
   // Handle CORS preflight requests
   if (event.httpMethod === "OPTIONS") {
@@ -59,10 +65,6 @@ export async function handler(event) {
   const params = new URLSearchParams(event.body);
   const urlToCheck = params.get("url");
 
-  console.log("Raw event body:", event.body);
-  console.log("Parsed URL parameter:", urlToCheck);
-  console.log("All parameters:", Object.fromEntries(params.entries()));
-
   if (!urlToCheck) {
     return {
       statusCode: 400,
@@ -71,32 +73,30 @@ export async function handler(event) {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({ 
-        error: "Missing 'url' parameter",
-        receivedBody: event.body,
-        parsedParams: Object.fromEntries(params.entries())
+        error: "Missing 'url' parameter"
       })
     };
   }
 
   try {
-    console.log("Checking URL with PhishTank:", urlToCheck);
-    console.log("URL length:", urlToCheck.length);
-        
+    console.log("Making PhishTank API request");
+    
+    // Try PhishTank request
+    const formParams = new URLSearchParams();
+    formParams.append('url', urlToCheck);
+    formParams.append('format', 'json');
+    
     const response = await fetch("https://checkurl.phishtank.com/checkurl/", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-            "User-Agent": "phishtank/qrtrust-app"
-        },
-        body: new URLSearchParams({
-            url: urlToCheck,
-            format: 'json'
-        }).toString()
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/x-www-form-urlencoded",
+        "User-Agent": "phishtank/qrtrust-app"
+      },
+      body: formParams.toString()
     });
 
     
     console.log("PhishTank response status:", response.status);
-    console.log("PhishTank response headers:", Object.fromEntries(response.headers.entries()));
 
     if (!response.ok) {
       console.error("PhishTank API error:", response.status, response.statusText);
@@ -109,7 +109,7 @@ export async function handler(event) {
     }
 
     const responseText = await response.text();
-    console.log("PhishTank raw response:", responseText);
+    console.log("PhishTank response received, parsing...");
 
     // Check the content type to determine how to parse the response
     const contentType = response.headers.get("content-type") || "";
@@ -128,12 +128,12 @@ export async function handler(event) {
         try {
           result = parsePhishTankXML(responseText);
         } catch (xmlError) {
-          throw new Error(`Unexpected response format. Content-Type: ${contentType}, Response: ${responseText.substring(0, 200)}`);
+          throw new Error(`Unexpected response format. Content-Type: ${contentType}`);
         }
       }
     }
     
-    console.log("Parsed PhishTank response:", result);
+    console.log("PhishTank response parsed successfully");
 
     return {
       statusCode: 200,

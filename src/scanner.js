@@ -3,11 +3,21 @@ import { BrowserQRCodeReader } from '@zxing/browser';
 let codeReader = null;
 let currentStream = null;
 let videoElement = null;
+let isProcessing = false; // Flag to prevent multiple simultaneous scans
+let lastScannedUrl = null; // Track the last scanned URL to prevent duplicates
+let scannerActive = false; // Flag to track if scanner is actively running
 
 export async function startScanner(videoEl, onResult) {
+  // Always stop any existing scanner first
   if (codeReader) {
     stopScanner();
   }
+  
+  // Completely reset all state for fresh scan
+  resetScannerState();
+  scannerActive = true; // Activate for new scan
+  
+  console.log("Starting fresh scanner session");
   
   codeReader = new BrowserQRCodeReader();
   videoElement = videoEl; // Store reference to video element
@@ -30,9 +40,25 @@ export async function startScanner(videoEl, onResult) {
       videoEl, 
       (result, error) => {
         if (result) {
-          onResult(result.getText());
+          const scannedUrl = result.getText();
+          
+          // Multiple checks to prevent processing
+          if (!scannerActive || isProcessing || scannedUrl === lastScannedUrl) {
+            return;
+          }
+          
+          // Set processing flag and store the URL
+          isProcessing = true;
+          lastScannedUrl = scannedUrl;
+          scannerActive = false; // Immediately deactivate to prevent more scans
+          
+          console.log("QR Code detected, processing...");
+          onResult(scannedUrl);
         }
         if (error) {
+          // Only log errors if scanner is still active
+          if (!scannerActive) return;
+          
           // Filter out expected errors that occur during normal scanning
           const isExpectedError = error.name === 'NotFoundException' || 
                                  error.name === 'NotFoundException2' ||
@@ -61,6 +87,9 @@ export async function startScanner(videoEl, onResult) {
 export function stopScanner() {
   console.log("Stopping scanner...");
   
+  // Immediately deactivate scanner and reset all state
+  resetScannerState();
+  
   // Stop the camera stream first
   if (currentStream) {
     currentStream.getTracks().forEach(track => {
@@ -85,4 +114,12 @@ export function stopScanner() {
   }
   
   console.log("Scanner stopped successfully");
+}
+
+// Function to reset all scanner state
+function resetScannerState() {
+  isProcessing = false;
+  lastScannedUrl = null;
+  scannerActive = false;
+  console.log("Scanner state reset");
 }
