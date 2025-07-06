@@ -42,8 +42,9 @@ export async function checkUrlWithPhishTank(url) {
       phish_id: data.results.phish_id
     });
 
-    // URL is considered phishing if it's in the database AND verified
-    return inDatabase && verified;
+    // URL is considered phishing if it's in the database
+    // The 'verified' field indicates moderator verification, but unverified entries are still suspicious
+    return inDatabase;
     
   } catch (error) {
     console.error("Error checking URL with PhishTank:", error);

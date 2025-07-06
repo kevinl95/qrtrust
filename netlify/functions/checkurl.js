@@ -81,22 +81,19 @@ export async function handler(event) {
   try {
     console.log("Checking URL with PhishTank:", urlToCheck);
     console.log("URL length:", urlToCheck.length);
-    
-    // Try PhishTank request
-    const formParams = new URLSearchParams();
-    formParams.append('url', urlToCheck);
-    formParams.append('format', 'json');
-    
-    console.log("PhishTank request data:", formParams.toString());
-    
-    const response = await fetch("http://checkurl.phishtank.com/checkurl/", {
-      method: "POST",
-      headers: { 
-        "Content-Type": "application/x-www-form-urlencoded",
-        "User-Agent": "phishtank/qrtrust-app"
-      },
-      body: formParams.toString()
+        
+    const response = await fetch("https://checkurl.phishtank.com/checkurl/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "User-Agent": "phishtank/qrtrust-app"
+        },
+        body: new URLSearchParams({
+            url: urlToCheck,
+            format: 'json'
+        }).toString()
     });
+
     
     console.log("PhishTank response status:", response.status);
     console.log("PhishTank response headers:", Object.fromEntries(response.headers.entries()));
