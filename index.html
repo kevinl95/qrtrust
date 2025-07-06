@@ -19,6 +19,19 @@
     </header>
 
     <main class="main-content">
+      <!-- PWA Install Banner -->
+      <div id="install-banner" class="install-banner" style="display: none;">
+        <div class="install-content">
+          <span class="install-icon">📱</span>
+          <div class="install-text">
+            <strong>Install QRTrust</strong>
+            <span>Add to your home screen for quick access</span>
+          </div>
+          <button id="install-btn" class="install-button">Install</button>
+          <button id="dismiss-btn" class="dismiss-button">×</button>
+        </div>
+      </div>
+
       <div class="scanner-container">
         <div class="video-wrapper">
           <video autoplay playsinline muted></video>

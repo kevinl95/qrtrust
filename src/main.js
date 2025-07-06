@@ -12,9 +12,14 @@ const stopBtn = document.querySelector('#stop-btn');
 
 let isScanning = false;
 
+// PWA Install functionality
+let deferredPrompt;
+let hasUsedApp = false;
+
 // Initialize app
 document.addEventListener('DOMContentLoaded', () => {
   setupEventListeners();
+  trackAppUsage(); // Start tracking app usage on load
 });
 
 function setupEventListeners() {
@@ -55,6 +60,9 @@ function handleStopScanning() {
 
 async function handleQRCodeDetected(scannedUrl) {
   if (!scannedUrl) return;
+  
+  // Track that user has used the app (for install prompt timing)
+  trackAppUsage();
   
   // Additional check to prevent multiple simultaneous processing
   if (!isScanning) {
@@ -298,3 +306,92 @@ function showError(message, url = null) {
 function hideResult() {
   resultContainer.style.display = 'none';
 }
+
+// Track app usage to show install prompt only after user sees value
+function trackAppUsage() {
+  if (!hasUsedApp) {
+    hasUsedApp = true;
+    // Show install prompt after a short delay if user hasn't dismissed it
+    setTimeout(() => {
+      showInstallPromptIfAppropriate();
+    }, 3000); // 3 seconds after first use
+  }
+}
+
+// Detect platform and show appropriate install method
+function showInstallPromptIfAppropriate() {
+  // Don't show if already dismissed or installed
+  if (localStorage.getItem('installPromptDismissed') || isAppInstalled()) {
+    return;
+  }
+  
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const isInStandaloneMode = window.navigator.standalone;
+  
+  if (isIOS && !isInStandaloneMode) {
+    showIOSInstallInstructions();
+  } else if (deferredPrompt) {
+    showInstallBanner();
+  }
+}
+
+// Check if app is already installed
+function isAppInstalled() {
+  return window.navigator.standalone || // iOS
+         window.matchMedia('(display-mode: standalone)').matches; // Other platforms
+}
+
+// Show install banner for browsers that support beforeinstallprompt
+function showInstallBanner() {
+  const banner = document.getElementById('install-banner');
+  const installBtn = document.getElementById('install-btn');
+  const dismissBtn = document.getElementById('dismiss-btn');
+  
+  banner.style.display = 'block';
+  
+  installBtn.onclick = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      console.log('Install prompt result:', outcome);
+      deferredPrompt = null;
+      banner.style.display = 'none';
+    }
+  };
+  
+  dismissBtn.onclick = () => {
+    banner.style.display = 'none';
+    localStorage.setItem('installPromptDismissed', 'true');
+  };
+}
+
+// Show iOS-specific install instructions
+function showIOSInstallInstructions() {
+  const banner = document.getElementById('install-banner');
+  banner.innerHTML = `
+    <div class="ios-install-instructions">
+      <strong>📱 Install QRTrust</strong>
+      Tap the Share button <span class="ios-share-icon">□↗</span> then "Add to Home Screen" for quick access
+      <button onclick="this.parentElement.style.display='none'; localStorage.setItem('installPromptDismissed', 'true');" 
+              style="position: absolute; top: 0.5rem; right: 0.5rem; background: none; border: none; font-size: 1.2rem; cursor: pointer; opacity: 0.6;">×</button>
+    </div>
+  `;
+  banner.style.display = 'block';
+}
+
+// Listen for the beforeinstallprompt event
+window.addEventListener('beforeinstallprompt', (e) => {
+  // Prevent the mini-infobar from appearing on mobile
+  e.preventDefault();
+  // Save the event so it can be triggered later
+  deferredPrompt = e;
+  console.log('Install prompt available');
+});
+
+// Listen for successful app installation
+window.addEventListener('appinstalled', () => {
+  console.log('PWA was installed');
+  deferredPrompt = null;
+  const banner = document.getElementById('install-banner');
+  if (banner) banner.style.display = 'none';
+});
