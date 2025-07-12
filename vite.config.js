@@ -12,6 +12,8 @@ export default defineConfig({
         display: 'standalone',
         background_color: '#ffffff',
         theme_color: '#ff5757',
+        lang: 'en',
+        scope: '/',
         icons: [
           // Android
           {
@@ -44,7 +46,6 @@ export default defineConfig({
             sizes: '48x48',
             type: 'image/png'
           },
-
           // iOS
           {
             src: 'ios/180.png',
@@ -70,6 +71,33 @@ export default defineConfig({
             type: 'image/png',
             purpose: 'any'
           }
+        ],
+        shortcuts: [
+          {
+            name: 'Scan QR code',
+            url: '/',
+            description: 'Scan a QR code'
+          }
+        ],
+        screenshots: [
+          {
+            src: 'screenshots/desktop-screenshot.png',
+            sizes: '1280x720',
+            type: 'image/png',
+            form_factor: 'wide',
+            label: 'QRTrust desktop view'
+          },
+          {
+            src: 'screenshots/mobile-screenshot.png',
+            sizes: '390x844',
+            type: 'image/png',
+            form_factor: 'narrow',
+            label: 'QRTrust mobile view'
+          }
+        ],
+        categories: [
+          'security',
+          'utilities'
         ]
       },
       workbox: {
