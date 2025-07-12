@@ -8,12 +8,20 @@ export default defineConfig({
       manifest: {
         name: 'QRTrust',
         short_name: 'QRTrust',
+        description: 'Privacy-first QR code scanner with phishing protection',
+        id: 'qrtrust-scanner',
         start_url: '/',
         display: 'standalone',
         background_color: '#ffffff',
         theme_color: '#ff5757',
         lang: 'en',
+        dir: 'ltr',
         scope: '/',
+        launch_handler: {
+          client_mode: 'navigate-existing'
+        },
+        orientation: 'any',
+        prefer_related_applications: false,
         icons: [
           // Android
           {
